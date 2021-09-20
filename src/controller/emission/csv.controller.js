@@ -24,6 +24,7 @@ const upload = async () => {
               console.log('Imported the data successfully')
           })
           .catch((error) => {
+            console.log(error)
             console.log('Failed to import the data ')
         });
       });
