@@ -14,5 +14,5 @@ db.con.sync();
 // });
 
 let port = 8080;
-app.listen(port, () => {
+app.listen(process.env.PORT || port, () => {
   console.log(`Running at localhost:${port}`)});
