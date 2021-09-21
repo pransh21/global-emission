@@ -1,10 +1,14 @@
-const dbConfig = require("../config/db.config.js");
+// const dbConfig = require("../config/db.config.js");
 const Sequelize = require("sequelize");
 
-const con = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
-  host: dbConfig.HOST,
-  dialect: dbConfig.dialect,
-  operatorsAliases: false,
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: './src/db/pollution.db'
+});
+
+// const con = new Sequelize(dbConfig, {
+//   dialect: 'sqlite',
+//   operatorsAliases: false,
 
 //   pool: {
 //     max: dbConfig.pool.max,
@@ -12,13 +16,15 @@ const con = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
 //     acquire: dbConfig.pool.acquire,
 //     idle: dbConfig.pool.idle
 //   }
-});
+// });
 
 const db = {};
 
 db.Sequelize = Sequelize;
-db.con = con;
+// db.con = con;
 
-db.emissions = require("./emissions.model.js")(con, Sequelize);
+db.sequelize = sequelize;
+
+db.emissions = require("./emissions.model.js")(sequelize, Sequelize);
 
 module.exports = db;
