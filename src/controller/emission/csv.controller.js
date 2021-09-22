@@ -25,14 +25,12 @@ const upload = async (req, res) => {
           .then(() => {
               console.log('Imported the data successfully')
               obj.success = true
-              obj.size = data.length
               obj.MESSAGE = "Imported the data successfully"
 
               res.send(obj)
           })
           .catch((error) => {
             obj.success = false
-            obj.size = data.length
             obj.MESSAGE = "Failed to import the data."
 
             console.log('Failed to import the data ')
