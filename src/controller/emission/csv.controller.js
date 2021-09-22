@@ -5,7 +5,8 @@ const sequelize = db.sequelize;
 const fs = require("fs");
 const csv = require("fast-csv");
 
-const upload = async () => {
+const upload = async (req, res) => {
+  var obj = {};
   try {
     let emissions = [];
     let path = __basedir + "/resources/static/assets/greenhouse_cleaned.csv";
@@ -23,10 +24,20 @@ const upload = async () => {
         Emission.bulkCreate(emissions)
           .then(() => {
               console.log('Imported the data successfully')
+              obj.success = true
+              obj.size = data.length
+              obj.MESSAGE = "Imported the data successfully"
+
+              res.send(obj)
           })
           .catch((error) => {
-            console.log(error)
+            obj.success = false
+            obj.size = data.length
+            obj.MESSAGE = "Failed to import the data."
+
             console.log('Failed to import the data ')
+            console.log(error)
+            res.send(obj)
         });
       });
   } catch (error) {
