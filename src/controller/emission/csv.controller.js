@@ -31,7 +31,7 @@ const upload = async (req, res) => {
           })
           .catch((error) => {
             obj.success = false
-            obj.MESSAGE = "Failed to import the data."
+            obj.MESSAGE = "Failed to import the data. DB is not empty."
 
             console.log('Failed to import the data ')
             console.log(error)
@@ -59,35 +59,41 @@ const getEmissions = (req, res) => {
       obj.MESSAGE = err.message || "Some error occurred while retrieving data"
 
       res.send(obj)
-
-      // res.status(500).send({
-      //   message:
-      //     err.message || "Some error occurred while retrieving tutorials.",
-      // });
     });
 };
 
 const getSpecificEmissions = (req, res) => {
-    let id = req.params.id;
+
+    let id = req.params.id.toUpperCase();
     let startYear = req.query.start;
     let endYear = req.query.end;
     let gases = req.query.gases
-    let arr = gases.replace(' ', ' and ')
-    console.log(arr)
-
     var obj = {}
+    try{
+      var gasArr = gases.split(',')
+    }
+    catch(err){
+      console.log('Error in gases array')
+    }
+
+    if(!/^\d+$/.test(startYear) || !/^\d+$/.test(endYear)){
+      obj.success = false
+      obj.MESSAGE = "Data not found for the given parameters. Please recheck input"
+      return res.send(obj)
+    }
+
     const sql = `
     SELECT country_or_area, year, value, category
     FROM emissions
-    WHERE year BETWEEN :start AND :end AND ids = :ids AND category=:gas;
+    WHERE year BETWEEN :start AND :end AND ids = :ids AND category in (:gas);
     `
     sequelize.query(sql,
-    { replacements: { start: startYear, end: endYear, ids: id, gas: gases}, type: sequelize.QueryTypes.SELECT }
+    { replacements: { start: startYear, end: endYear, ids: id, gas: gasArr}, type: sequelize.QueryTypes.SELECT }
     )
     .then((data) => {
         obj.success = true
         obj.size = data.length
-        obj.MESSAGE = "It worked"
+        obj.MESSAGE = data.length > 0 ? "Data has been retrieved" : "Data not found for the given parameters. Please recheck input"
         obj.data = data
 
         res.status(200).send(obj);
@@ -97,11 +103,6 @@ const getSpecificEmissions = (req, res) => {
         obj.MESSAGE = err.message || "Some error occurred while retrieving data"
 
         res.send(obj)
-
-        // res.status(500).send({
-        //   message:
-        //     err.message || "Some error occurred while retrieving data",
-        // });
       });
   };
 
@@ -126,7 +127,7 @@ const getSpecificEmissions = (req, res) => {
 
         obj.success = true
         obj.size = data.length
-        obj.MESSAGE = "It worked"
+        obj.MESSAGE = data.length > 0 ? "Data has been retrieved" : "Data not found for the given parameters."
         obj.data = data
 
         res.send(obj);
@@ -137,10 +138,6 @@ const getSpecificEmissions = (req, res) => {
 
         res.status(200).send(obj);
 
-        // res.status(500).send({
-        //   message:
-        //     err.message || "Some error occurred while retrieving data",
-        // });
       });
   };
   

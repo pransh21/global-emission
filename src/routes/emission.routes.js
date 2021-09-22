@@ -10,7 +10,7 @@ let routes = (app) => {
 
   router.get("/countries", csvController.getCountries);
 
-  router.get("/country/id/:id", csvController.getSpecificEmissions);
+  router.get("/country/id=:id", csvController.getSpecificEmissions);
 
   app.use("/", router);
 };
