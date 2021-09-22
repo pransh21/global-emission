@@ -1,21 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const csvController = require("../controller/emission/csv.controller");
-// const upload = require("../middlewares/upload");
 
 let routes = (app) => {
-//   router.post("/upload", upload.single("file"), csvController.upload);
 
-  router.post("/upload", csvController.upload);
+  router.get("/upload", csvController.upload); //Seeds the initial DB
 
+  router.get("/emissions", csvController.getEmissions); // gets all the data in db. 
 
+  router.get("/countries", csvController.getCountries);
 
-  router.get("/emissions", csvController.getEmissions);
+  router.get("/country/id/:id", csvController.getSpecificEmissions);
 
-
-  router.get("/country/id", csvController.checkQueries);
-
-  app.use("/api/csv", router);
+  app.use("/", router);
 };
 
 module.exports = routes;
