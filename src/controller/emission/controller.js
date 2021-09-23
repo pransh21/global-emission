@@ -65,7 +65,7 @@ const getEmissions = (req, res) => {
 
 const getSpecificEmissions = (req, res) => {
 
-    let id = req.params.id.toUpperCase();
+    let code = req.params.id.toUpperCase();
     let startYear = req.query.start;
     let endYear = req.query.end;
     let gases = req.query.gases
@@ -86,10 +86,10 @@ const getSpecificEmissions = (req, res) => {
     const sql = `
     SELECT *
     FROM emissions
-    WHERE year BETWEEN :start AND :end AND ids = :ids AND category in (:gas);
+    WHERE year BETWEEN :start AND :end AND code = :code AND category in (:gas);
     `
     sequelize.query(sql,
-    { replacements: { start: startYear, end: endYear, ids: id, gas: gasArr}, type: sequelize.QueryTypes.SELECT }
+    { replacements: { start: startYear, end: endYear, code: code, gas: gasArr}, type: sequelize.QueryTypes.SELECT }
     )
     .then((data) => {
         obj.success = true
@@ -119,7 +119,7 @@ const getSpecificEmissions = (req, res) => {
         FROM emissions
         GROUP BY country_or_area, category
         )
-        SELECT country_or_area, ids, year, category FROM emissions 
+        SELECT country_or_area, code, year, category FROM emissions 
         inner join TEMP
         ON (year =  TEMP.MIN_YEAR OR year = TEMP.MAX_YEAR) AND country_or_area = TEMP.ca and category = TEMP.c
       `
@@ -149,21 +149,34 @@ const loadApiSpecFile = (req, res) => {
         <script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     </head>
     <body>
-    <p>Hi there! Please click on the button below to download OpenAPI specification file.</p>
-        <button id = "btn_download" style=" background-color: #4CAF50">Download</button>
-        <script type="text/javascript">
-        $("#btn_download").click(function(){
+      <p>Hi there! Please click on the button below to display OpenAPI specification file.</p>
+          <button id = "btn_download" style="background-color: #4CAF50">Display</button><br><br>
+          <p>Please click on the button below to download project overview.</p>
+          <button id = "btn_download1" style="background-color: #4CAF50">Download</button><br><br>
+
+          <script type="text/javascript">
+          $("#btn_download").click(function(){
+              window.open('/display');
+          })
+          $("#btn_download1").click(function(){
             window.open('/download');
         })
         </script>
+          <p>Also, please refer to the link below to get standard 2-letter country codes for api queries. (For European Union, it is assumed to be 'EU' for now).</p>
+          <a href="https://www.nationsonline.org/oneworld/country_code_list.htm" target="_blank">Country Codes</a><br><br>
     </body>
   </html>`)
 
 };
 
-const downloadApiSpecFile = (req, res) => {
-  let p = __basedir + "/resources/static/assets/apiSpecs.yaml";
-  res.download(path.resolve(p));
+const displayApiSpecFile = (req, res) => {
+  let p = "/resources/static/assets/apiSpecs.yaml";
+  res.sendFile(path.resolve(__basedir + p));
+};
+
+const downloadOverview = (req, res) => {
+  let p = "/resources/static/assets/blue-sky-documentation.doc";
+  res.sendFile(path.resolve(__basedir + p));
 };
 
 module.exports = {
@@ -172,5 +185,6 @@ module.exports = {
   getSpecificEmissions,
   getCountries,
   loadApiSpecFile,
-  downloadApiSpecFile
+  displayApiSpecFile,
+  downloadOverview
 };

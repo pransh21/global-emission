@@ -14,7 +14,7 @@ module.exports = function (sequelize, Sequelize) {
         type: Sequelize.STRING,
         primaryKey: true,
       },
-      ids: {
+      code: {
         type: Sequelize.STRING,
         primaryKey: true,
       }

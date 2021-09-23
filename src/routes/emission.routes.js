@@ -6,7 +6,9 @@ let routes = (app) => {
 
   router.get("/", controller.loadApiSpecFile);
 
-  router.get("/download", controller.downloadApiSpecFile);
+  router.get("/display", controller.displayApiSpecFile);
+
+  router.get("/download", controller.downloadOverview);
 
   router.get("/upload", controller.upload); //Seeds the initial DB
 
