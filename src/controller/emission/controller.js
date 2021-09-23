@@ -4,14 +4,15 @@ const sequelize = db.sequelize;
 
 const fs = require("fs");
 const csv = require("fast-csv");
+var path = require('path');
 
 const upload = async (req, res) => {
   var obj = {};
   try {
     let emissions = [];
-    let path = __basedir + "/resources/static/assets/greenhouse_cleaned.csv";
+    let p = __basedir + "/resources/static/assets/greenhouse_cleaned.csv";
 
-    fs.createReadStream(path)
+    fs.createReadStream(p)
       .pipe(csv.parse({ headers: true }))
       .on("error", (error) => {
         throw error.message;
@@ -27,7 +28,7 @@ const upload = async (req, res) => {
               obj.success = true
               obj.MESSAGE = "Imported the data successfully"
 
-              res.send(obj)
+              res.status(200).send(obj)
           })
           .catch((error) => {
             obj.success = false
@@ -35,7 +36,7 @@ const upload = async (req, res) => {
 
             console.log('Failed to import the data ')
             console.log(error)
-            res.send(obj)
+            res.status(400).send(obj)
         });
       });
   } catch (error) {
@@ -47,9 +48,9 @@ const getEmissions = (req, res) => {
   var obj = {}
   Emission.findAll()
     .then((data) => {
-      obj.success = true
+      // obj.success = true
       obj.size = data.length
-      obj.MESSAGE = "Fetched whole table contents"
+      obj.MESSAGE = data.length > 0 ? "Fetched whole table contents" : "DB is empty. Please go to https://arcane-basin-50951.herokuapp.com/upload to seed the DB"
       obj.data = data
 
       res.status(200).send(obj);
@@ -58,7 +59,7 @@ const getEmissions = (req, res) => {
       obj.success = false
       obj.MESSAGE = err.message || "Some error occurred while retrieving data"
 
-      res.send(obj)
+      res.status(400).send(obj)
     });
 };
 
@@ -78,12 +79,12 @@ const getSpecificEmissions = (req, res) => {
 
     if(!/^\d+$/.test(startYear) || !/^\d+$/.test(endYear)){
       obj.success = false
-      obj.MESSAGE = "Data not found for the given parameters. Please recheck input"
-      return res.send(obj)
+      obj.MESSAGE = "Data not found for the given parameters. Please recheck input."
+      return res.status(400).send(obj)
     }
 
     const sql = `
-    SELECT country_or_area, year, value, category
+    SELECT *
     FROM emissions
     WHERE year BETWEEN :start AND :end AND ids = :ids AND category in (:gas);
     `
@@ -93,7 +94,7 @@ const getSpecificEmissions = (req, res) => {
     .then((data) => {
         obj.success = true
         obj.size = data.length
-        obj.MESSAGE = data.length > 0 ? "Data has been retrieved" : "Data not found for the given parameters. Please recheck input"
+        obj.MESSAGE = data.length > 0 ? "Data has been retrieved" : "Data not found for the given parameters. Please recheck input."
         obj.data = data
 
         res.status(200).send(obj);
@@ -102,7 +103,7 @@ const getSpecificEmissions = (req, res) => {
         obj.success = false
         obj.MESSAGE = err.message || "Some error occurred while retrieving data"
 
-        res.send(obj)
+        res.status(400).send(obj)
       });
   };
 
@@ -127,7 +128,7 @@ const getSpecificEmissions = (req, res) => {
 
         obj.success = true
         obj.size = data.length
-        obj.MESSAGE = data.length > 0 ? "Data has been retrieved" : "Data not found for the given parameters."
+        obj.MESSAGE = data.length > 0 ? "Data has been retrieved" : "DB is empty. Please go to https://arcane-basin-50951.herokuapp.com/upload to seed the DB."
         obj.data = data
 
         res.send(obj);
@@ -136,15 +137,40 @@ const getSpecificEmissions = (req, res) => {
         obj.success = false
         obj.MESSAGE = err.message || "Some error occurred while retrieving data"
 
-        res.status(200).send(obj);
+        res.status(400).send(obj);
 
       });
   };
-  
+
+const loadApiSpecFile = (req, res) => {
+  res.send(
+  `<html>
+    <head>
+        <script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    </head>
+    <body>
+    <p>Hi there! Please click on the button below to download OpenAPI specification file.</p>
+        <button id = "btn_download" style=" background-color: #4CAF50">Download</button>
+        <script type="text/javascript">
+        $("#btn_download").click(function(){
+            window.open('/download');
+        })
+        </script>
+    </body>
+  </html>`)
+
+};
+
+const downloadApiSpecFile = (req, res) => {
+  let p = __basedir + "/resources/static/assets/apiSpecs.yaml";
+  res.download(path.resolve(p));
+};
 
 module.exports = {
   upload,
   getEmissions,
   getSpecificEmissions,
-  getCountries
+  getCountries,
+  loadApiSpecFile,
+  downloadApiSpecFile
 };

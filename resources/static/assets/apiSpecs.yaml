@@ -1,0 +1,102 @@
+    openapi: 3.0.0
+    info:
+      title: Analyse greenhouse and other gas emission data globally.
+      version: 1.0.0
+    servers:
+      - url: https://arcane-basin-50951.herokuapp.com/
+    paths:
+      /countries:
+        get: 
+          summary: Returns details of countries/areas in the DB with values for startYear and endYear).
+          description: Optional extended description in CommonMark or HTML.
+          responses:
+            '200':    # status code
+              description: An object with success value, a message, data size and data.
+              content:
+                application/json:
+                  schema: 
+                    type: object
+                    items: 
+                      type: string
+      /emissions:
+        get: 
+          summary: Returns all the data stored only for reference.(FOR PERSONAL USE ONLY)
+          description: Optional extended description in CommonMark or HTML.
+          responses:
+            '200':    # status code
+              description: An object with success value, a message, data size and data.
+              content:
+                application/json:
+                  schema: 
+                    type: array
+                    items: 
+                      type: string
+
+      /upload:
+        get:
+          summary: Imports the data from csv file to SQLite DB on server initially.(FOR PERSONAL USE ONLY)
+          description: This is done because of heroku's ephemeral filesystem nature. If idle or restarted, each dyno discards SQLite DB file. So use this to seed the DB from csv dataset in such case.
+          responses:
+            '200':    # status code
+              description: Imports csv dataset to SQLite DB. 
+              content:
+                application/json:
+                  schema: 
+                    type: array
+                    items: 
+                      type: string
+
+      /country/id={code}?start={startyear}&end={endYear}&gases={gas1,gas2,gas3...}:
+        get:
+          summary: Returns a range of specific gas/gases emissions for a country/area.
+          parameters:
+            - name: code
+              in: path
+              required: true
+              description: The country/area unique code to analyse specific area's emissions between start and end year.
+              schema:
+                type: string
+
+            - name: startyear
+             in: query
+              schema:
+                type: integer
+              description: The start year for a country's specific gas/gases emissions to define a range.
+
+            - name: endyear
+              in: query
+              schema:
+                type: integer
+              description: The end year for a country's specific gas/gases emissions to define a range.
+
+            - name: gases
+              in: query
+              schema:
+                type: string
+              description: comma-separated values of emission gases for a counntry to collect the result set accordingly.
+          responses:
+            '200':
+              description: An object with success value, a message, data size and data.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        format: int64
+                        example: 4
+                      name:
+                        type: string
+            '400':
+              description: The specified syntax is invalid.
+            default:
+              description: Unexpected error
+
+    components:
+      securitySchemes:
+        BasicAuth:
+          type: http  //APIKEY
+          scheme: basicquery parameters
+    security:
+      - BasicAuth: []
