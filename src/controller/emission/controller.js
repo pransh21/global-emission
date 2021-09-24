@@ -68,8 +68,9 @@ const getSpecificEmissions = (req, res) => {
     let code = req.params.id.toUpperCase();
     let startYear = req.query.start;
     let endYear = req.query.end;
-    let gases = req.query.gases
-    var obj = {}
+    let gases = req.query.gases.toLowerCase();
+    var obj = {};
+
     try{
       var gasArr = gases.split(',')
     }
@@ -86,14 +87,14 @@ const getSpecificEmissions = (req, res) => {
     const sql = `
     SELECT *
     FROM emissions
-    WHERE year BETWEEN :start AND :end AND code = :code AND category in (:gas);
+    WHERE year BETWEEN :start AND :end AND code = :code AND category in (:gas) ORDER BY category;
     `
     sequelize.query(sql,
     { replacements: { start: startYear, end: endYear, code: code, gas: gasArr}, type: sequelize.QueryTypes.SELECT }
     )
     .then((data) => {
-        obj.success = true
         obj.size = data.length
+        obj.success = data.length > 0 ?  true : false
         obj.MESSAGE = data.length > 0 ? "Data has been retrieved" : "Data not found for the given parameters. Please recheck input."
         obj.data = data
 
@@ -125,18 +126,16 @@ const getSpecificEmissions = (req, res) => {
       `
     sequelize.query(sql, {model: Emission})
       .then((data) => {
-
-        obj.success = true
         obj.size = data.length
+        obj.success = data.length > 0 ? true : false
         obj.MESSAGE = data.length > 0 ? "Data has been retrieved" : "DB is empty. Please go to https://arcane-basin-50951.herokuapp.com/upload to seed the DB."
         obj.data = data
 
-        res.send(obj);
+        res.status(200).send(obj);
       })
       .catch((err) => {
         obj.success = false
         obj.MESSAGE = err.message || "Some error occurred while retrieving data"
-
         res.status(400).send(obj);
 
       });
